@@ -9,7 +9,7 @@ import time
 #Lister les images du dossier images
 Lnom = os.listdir("DataSet/DataSetPostTraitement/")
 imageCherchee = "test/0_IMG_2165_R.jpeg"
-Lnom.remove('test')
+Lnom.remove('test') #retrait du sous dossier test
 
 
 # Read image from file

@@ -34,7 +34,7 @@ compteur = comptageClass(Dataset)
 
 
 for classe, nb in compteur:
-    nbTest = int(nb*0.3)
+    nbTest = int(nb*0.25)
     print(classe, nbTest)
     for i in range(nbTest):
         index = random.randint(0,len(Dataset[classe])-1)
