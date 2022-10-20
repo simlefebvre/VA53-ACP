@@ -5,28 +5,25 @@ import matplotlib.pyplot as plt
 import os
 from nameList import class_names
 
-print("go")
+print("Fin des importations")
 
 # Read image from file
 def lecture_image(nom_image : str,input : int = 250) -> np.ndarray:
     """A partir d'un nom de fichier renvoie l'image sous forme de tableau numpy"""
-    #image = cv.imread(f"DataSet/DataSetPostTraitement/{nom_image}",0)
     image = cv.imread(nom_image,0)
     img = cv.resize(image, (input, input), interpolation=cv.INTER_AREA)
     return img
 
 def extractImagesAndLabels(path : str,input : int = 250,externe=False) -> list:
-    """A partir d'un chemin renvoie la liste des fichiers"""
-    Lnom = os.listdir(path)
-    Lnom.remove('test')
-    Lnom.remove('test_externe')
+    """Récupére les informations du DataSet"""
+    LNomTrain = os.listdir(f"{path}/train/")
 
-    train_images = np.array([lecture_image(f"DataSet/DataSetPostTraitement/{nom_image}",input) for nom_image in Lnom]) #Récupération des images
-    train_labels = np.array([int(nom_image.split("_")[0]) for nom_image in Lnom]) #Récupération des labels
+    train_images = np.array([lecture_image(f"{path}/train/{nom_image}",input) for nom_image in LNomTrain]) #Récupération des images
+    train_labels = np.array([int(nom_image.split("_")[0]) for nom_image in LNomTrain]) #Récupération des labels
 
     if externe:
       Lnom = os.listdir(f"{path}/test_externe")
-      test_images = np.array([lecture_image(f"DataSet/DataSetPostTraitement/test_externe/{nom_image}",input) for nom_image in Lnom])
+      test_images = np.array([lecture_image(f"{path}/test_externe/{nom_image}",input) for nom_image in Lnom])
       test_labels = np.array([int(nom_image.split("_")[0]) for nom_image in Lnom])
     else:
       Lnom = os.listdir(path+"/test/" )
@@ -39,18 +36,18 @@ def extractImagesAndLabels(path : str,input : int = 250,externe=False) -> list:
 
     return train_images, train_labels, test_images, test_labels
 
-def generateModel(train_images, train_labels, nbEpochs, nbDense = 1, nbNeurone = [512],numeroModel=1,input=250) -> tf.keras.Sequential:
-    """Création du modèle"""
+def generateModel(train_images, train_labels, nbEpochs, nbDense = 1, nbNeurone = [512],numeroModel=1,input=250,callbacksEnable=False) -> tf.keras.Sequential:
+    """Création du modèle avec les paramètres donnés"""
+
     #Construire le modèle
-    
     model = tf.keras.Sequential([
         tf.keras.layers.Flatten(input_shape=(input, input)),
     ])
 
-    for i in range(nbDense):
+    for i in range(nbDense):#Ajout des couches cachées
         model.add(tf.keras.layers.Dense(nbNeurone[i], activation='relu'))
 
-    model.add(tf.keras.layers.Dense(15))
+    model.add(tf.keras.layers.Dense(15)) #Ajout de la couche de sortie
 
     #Compiler le modèle
     model.compile(optimizer='adam',
@@ -64,11 +61,14 @@ def generateModel(train_images, train_labels, nbEpochs, nbDense = 1, nbNeurone =
     embeddings_freq=1,
     )]
 
-
+    
+    if callbacksEnable:
+        model.fit(train_images, train_labels, epochs=nbEpochs, callbacks=callbacks)
+    else:
     #Entrainer le modèle
-    history = model.fit(train_images, train_labels, epochs=nbEpochs)
+      model.fit(train_images, train_labels, epochs=nbEpochs)
 
-    return model,history
+    return model
 
 def makePrediction(model, test_images) -> tf.keras.Sequential:
     """Calculer les prédictions"""
@@ -109,69 +109,25 @@ def plot_value_array(i, predictions_array, true_label):
 
 # Plot the first X test images, their predicted labels, and the true labels.
 # Color correct predictions in blue and incorrect predictions in red.
-"""num_rows = 7
-num_cols = 3
-num_images = num_rows*num_cols
-plt.figure(figsize=(3*2*num_cols, 2*num_rows))
-for i in range(num_images):
-  plt.subplot(num_rows, 2*num_cols, 2*i+1)
-  plot_image(i, predictions[i], test_labels, test_images)
-  plt.subplot(num_rows, 2*num_cols, 2*i+2)
-  plot_value_array(i, predictions[i], test_labels)
-plt.tight_layout()
-plt.show()"""
 
-
+#Variables 
 nbEpochs = 45
-"""
-model,history = generateModel(train_images, train_labels, nbEpochs,numeroModel=2,)
-
-
-#Display the model's architecture
-model.summary()
-
-test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
-print('\nTest accuracy:', test_acc)
-"""
-
-"""for iter in (1,2,3): 
-  tailleImage = 50
-  nbNeurone = 1000
-  nbCouche = 2
-
-  train_images, train_labels, test_images, test_labels = extractImagesAndLabels("DataSet/DataSetPostTraitement/",tailleImage)
-
-  model,history = generateModel(train_images, train_labels, nbEpochs,numeroModel=f"{nbCouche}_{nbNeurone}_{tailleImage}_{iter}",nbDense=nbCouche,nbNeurone=[nbNeurone]*nbCouche,input=tailleImage)
-  print(history)
-  test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=0)
-  print('\nTest accuracy:', test_acc)"""
-
-"""for iter in (0,1): 
-  tailleImage = 250
-  nbNeurone = 100
-  nbCouche = 1
-
-  train_images, train_labels, test_images, test_labels = extractImagesAndLabels("DataSet/DataSetPostTraitement/",tailleImage)
-
-  model,history = generateModel(train_images, train_labels, nbEpochs,numeroModel=f"{nbCouche}_{nbNeurone}_{tailleImage}_{iter}",nbDense=nbCouche,nbNeurone=[nbNeurone]*nbCouche,input=tailleImage)
-  print(history)
-  test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=0)
-  print('\nTest accuracy:', test_acc)"""
-
 tailleImage = 50
 nbNeurone = 1000
 nbCouche = 2
 
-train_images, train_labels, test_images, test_labels = extractImagesAndLabels("DataSet/DataSetPostTraitement",tailleImage,externe=True)
+#Récupération des données
+train_images, train_labels, test_images, test_labels = extractImagesAndLabels("DataSet/DataSetPostTraitement",tailleImage,externe=False)
 
-model,history = generateModel(train_images, train_labels, nbEpochs,numeroModel=f"{nbCouche}_{nbNeurone}_{tailleImage}_{iter}",nbDense=nbCouche,nbNeurone=[nbNeurone]*nbCouche,input=tailleImage)
-test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=0)
-print('\nTest accuracy:', test_acc)
+#Création et entrainement du modèle
+iteration = 0
+model = generateModel(train_images, train_labels, nbEpochs,nbDense=nbCouche,nbNeurone=[nbNeurone]*nbCouche,input=tailleImage,callbacksEnable=False)
 
 predictions = makePrediction(model, test_images)
 
-num_rows = 2
-num_cols = 2
+#Affichage des prédictions
+num_rows = 6
+num_cols = 3
 num_images = num_rows*num_cols
 plt.figure(figsize=(3*2*num_cols, 2*num_rows))
 for i in range(num_images):
