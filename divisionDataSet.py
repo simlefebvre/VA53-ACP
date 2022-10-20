@@ -32,7 +32,10 @@ def comptageClass(Dataset : dict[int,list[str]]) -> list[tuple[int,int]]:
 Dataset = divisionParClass(dir)
 compteur = comptageClass(Dataset)
 
+plt.bar([i[0] for i in compteur],[i[1] for i in compteur])
+plt.show()
 
+"""
 for classe, nb in compteur:
     nbTest = int(nb*0.3)
     print(classe, nbTest)
@@ -40,3 +43,4 @@ for classe, nb in compteur:
         index = random.randint(0,len(Dataset[classe])-1)
         os.rename('DataSet/DataSetPostTraitement/'+Dataset[classe][index],'DataSet/DataSetPostTraitement/test/'+Dataset[classe][index])
         Dataset[classe].pop(index)
+"""
