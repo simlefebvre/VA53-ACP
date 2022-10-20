@@ -16,10 +16,10 @@ def lecture_image(nom_image : str) -> np.ndarray:
 
 def computeModel(nbComposante : int):
     """
-    Calcul le modèle de reconnaissance et renvoie le dictionnaire des coordonée des image dans le repère des vecteurs propres, le vecteur de moyenne, la matrice des vecteurs propres 
+    Calcul le modèle de reconnaissance et renvoie le dictionnaire des coordonées des image dans le repère des vecteurs propres, le vecteur de moyenne, la matrice des vecteurs propres 
     """
     Limg = [lecture_image(f"DataSet/DataSetPostTraitement/train/{nom_image}") for nom_image in Lnom] #Récupération des images
-    LimgVect = [img.flatten() for img in Limg] #Véctorisation des images
+    LimgVect = [img.flatten() for img in Limg] #Vectorisation des images
     M = len(Limg)
     sumVect = np.add.reduce(LimgVect) #Somme des vecteurs
     meanVect = sumVect/M #Moyenne des vecteurs
@@ -79,7 +79,7 @@ def guess(image,dictohmegai,meanVect,matUi):
 
 def test(nbComposante : int) -> tuple[float, float, float]:
     """
-    Test le modèle de reconnaissance sur les images du dossier test et retourne le temps d'execution du calcul du modèle, le temps d'execution de la prédiction et le taux de reconnaissance
+    Test le modèle de reconnaissance sur les images du dossier test et retourne le temps d'exécution du calcul du modèle, le temps d'exécution de la prédiction et le taux de reconnaissance
     """
     start = time.time()
     dictohmegai,meanVect,matUi = computeModel(nbComposante) #Calcul du modèle
@@ -91,7 +91,7 @@ def test(nbComposante : int) -> tuple[float, float, float]:
         img,dist = guess(lecture_image("DataSet/DataSetPostTraitement/test/" + nom_image),dictohmegai,meanVect,matUi) #Prédiction
         if img[0].split('_')[0] == nom_image.split('_')[0] : #Comparaison avec la classe réelle
             compteur += 1
-        print(f"l'image {nom_image} aprés être passée par l'ACP est plus proche des images {img} à une distance de respectivemnet {dist}")
+        print(f"L'image {nom_image} après être passée par l'ACP est plus proche des images {img} à une distance de respectivemnet {dist}")
     dureeImage = time.time()-start
     ratio = compteur/len(Lnom)
     return dureeImage,ratio,dureeModel

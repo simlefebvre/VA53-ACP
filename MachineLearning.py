@@ -21,11 +21,11 @@ def extractImagesAndLabels(path : str,input : int = 250,externe=False) -> list:
     train_images = np.array([lecture_image(f"{path}/train/{nom_image}",input) for nom_image in LNomTrain]) #Récupération des images
     train_labels = np.array([int(nom_image.split("_")[0]) for nom_image in LNomTrain]) #Récupération des labels
 
-    if externe:
+    if externe: #Si on veut tester sur des images externes
       Lnom = os.listdir(f"{path}/test_externe")
       test_images = np.array([lecture_image(f"{path}/test_externe/{nom_image}",input) for nom_image in Lnom])
       test_labels = np.array([int(nom_image.split("_")[0]) for nom_image in Lnom])
-    else:
+    else: #Sinon on teste sur les images de test
       Lnom = os.listdir(path+"/test/" )
       test_images = np.array([lecture_image(path+"/test/"+ nom_image,input) for nom_image in Lnom]) #Récupération des images
       test_labels = np.array([int(nom_image.split("_")[0]) for nom_image in Lnom]) #Récupération des labels
@@ -40,32 +40,35 @@ def generateModel(train_images, train_labels, nbEpochs, nbDense = 1, nbNeurone =
     """Création du modèle avec les paramètres donnés"""
 
     #Construire le modèle
+    #Ajout de la couche d'entrée
     model = tf.keras.Sequential([
         tf.keras.layers.Flatten(input_shape=(input, input)),
     ])
-
-    for i in range(nbDense):#Ajout des couches cachées
+    #Ajout des couches cachées
+    for i in range(nbDense):
         model.add(tf.keras.layers.Dense(nbNeurone[i], activation='relu'))
 
-    model.add(tf.keras.layers.Dense(15)) #Ajout de la couche de sortie
+    #Ajout de la couche de sortie
+    model.add(tf.keras.layers.Dense(15)) 
 
-    #Compiler le modèle
+    #Compilation du modèle
     model.compile(optimizer='adam',
                 loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                 metrics=['accuracy'])
 
-
+    
     callbacks = [tf.keras.callbacks.TensorBoard(
     log_dir='my_log_dir/{}'.format(numeroModel),
     histogram_freq=1,
     embeddings_freq=1,
     )]
 
-    
+    #Choix de sauvegarder ou non les résultats
     if callbacksEnable:
-        model.fit(train_images, train_labels, epochs=nbEpochs, callbacks=callbacks)
+      #Entrainer le modèle
+      model.fit(train_images, train_labels, epochs=nbEpochs, callbacks=callbacks)
     else:
-    #Entrainer le modèle
+      #Entrainer le modèle
       model.fit(train_images, train_labels, epochs=nbEpochs)
 
     return model
@@ -77,6 +80,7 @@ def makePrediction(model, test_images) -> tf.keras.Sequential:
     return predictions
 
 def plot_image(i, predictions_array, true_label, img):
+  """Affiche l'image et la prédiction"""
   true_label, img = true_label[i], img[i]
   plt.grid(False)
   plt.xticks([])
@@ -96,6 +100,7 @@ def plot_image(i, predictions_array, true_label, img):
                                 color=color)
 
 def plot_value_array(i, predictions_array, true_label):
+  """Affiche le tableau des prédictions"""
   true_label = true_label[i]
   plt.grid(False)
   plt.xticks(range(15))
@@ -107,8 +112,9 @@ def plot_value_array(i, predictions_array, true_label):
   thisplot[predicted_label].set_color('red')
   thisplot[true_label].set_color('blue')
 
-# Plot the first X test images, their predicted labels, and the true labels.
-# Color correct predictions in blue and incorrect predictions in red.
+
+
+
 
 #Variables 
 nbEpochs = 45
@@ -123,10 +129,11 @@ train_images, train_labels, test_images, test_labels = extractImagesAndLabels("D
 iteration = 0
 model = generateModel(train_images, train_labels, nbEpochs,nbDense=nbCouche,nbNeurone=[nbNeurone]*nbCouche,input=tailleImage,callbacksEnable=False)
 
+#Calcul des prédictions
 predictions = makePrediction(model, test_images)
 
 #Affichage des prédictions
-num_rows = 6
+num_rows = 5
 num_cols = 3
 num_images = num_rows*num_cols
 plt.figure(figsize=(3*2*num_cols, 2*num_rows))
